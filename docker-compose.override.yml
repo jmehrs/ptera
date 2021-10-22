@@ -1,0 +1,59 @@
+version: "3.8"
+
+# networks:
+#   frontend:
+#   backend:
+
+
+services:
+#   proxy:
+#     command:
+#       #- "--log.level=DEBUG"
+#       - "--api.insecure=true"
+#       - "--providers.docker=true"
+# a      - "--entrypoints.web.address=:80"
+
+  backend:
+    ports:
+      - "80:80"
+    volumes:
+      - ./backend/app:/app
+    # command: bash -c "while true; do sleep 1; done"  # Infinite loop to keep container live doing nothing
+    command: /start-reload.sh
+
+  flower:
+    env_file:
+      - ".env"
+    image: '${CELERYWORKER_IMAGE_NAME?Variable not set}:${TAG-latest}'
+    build:
+      context: ./backend
+      dockerfile: celeryworker.dockerfile
+    command: /startup_scripts/flower/start.sh 
+    depends_on:
+      - redis
+      - rabbitmq
+    ports:
+      - 5557:5555
+
+  # worker:
+  #   command: bash -c "while true; do sleep 1; done"
+    # redis:
+    #   image: redis
+    #   ports:
+    #     - "6379"
+    #   networks:
+    #     - backend
+
+    # rabbitmq:
+    #   image: rabbitmq
+    #   environment:
+    #     RABBITMQ_DEFAULT_USER: "user"
+    #     RABBITMQ_DEFAULT_PASS: "password"
+    #   ports:
+    #     - "5672"
+    #   networks:
+    #     - backend
+  
+  pgadmin:
+    ports:
+      - 5050:5050
