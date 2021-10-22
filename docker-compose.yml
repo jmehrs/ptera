@@ -1,0 +1,70 @@
+version: "3.8"
+
+# networks:
+#   frontend:
+#   backend:
+
+
+services:
+ 
+  backend:
+    env_file:
+      - ".env"
+    image: '${BACKEND_IMAGE_NAME?Variable not set}:${TAG-latest}'
+    build:
+      context: ./backend
+      dockerfile: backend.dockerfile
+
+  worker:
+    env_file:
+      - ".env"
+    image: '${CELERYWORKER_IMAGE_NAME?Variable not set}:${TAG-latest}'
+    build:
+      context: ./backend
+      dockerfile: celeryworker.dockerfile
+    command: /startup_scripts/worker/start.sh
+    depends_on:
+      - redis
+      - rabbitmq
+
+  beat:
+    env_file:
+      - ".env"
+    image: '${CELERYWORKER_IMAGE_NAME?Variable not set}:${TAG-latest}'
+    build:
+      context: ./backend
+      dockerfile: celeryworker.dockerfile
+    command: /startup_scripts/beat/start.sh
+    depends_on:
+      - redis
+      - rabbitmq
+    
+
+  redis:
+    image: redis
+    # ports:
+    #   - "6379"
+
+  rabbitmq:
+    image: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: "user"
+      RABBITMQ_DEFAULT_PASS: "password"
+    # ports:
+    #   - "5672"
+
+  db:
+    image: postgres:14
+    # volumes:
+    #   - app-db-data:/var/lib/postgresql/data/pgdata
+    env_file:
+      - .env
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+
+  pgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      - db
+    env_file:
+      - .env
