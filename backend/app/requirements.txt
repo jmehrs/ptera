@@ -1,0 +1,10 @@
+alembic>=1.7.4
+celery[redis]>=5.1.2
+fastapi>=0.65.1
+flower>=1.0.0
+passlib==1.7.4
+pydantic[email]>=1.8.2
+psycopg2-binary>=2.9.1
+SQLAlchemy>=1.4.25
+tenacity>=8.0.1
+uvicorn>=0.13.4
