@@ -1,1 +1,1 @@
-from app.core.celery_beat import DatabaseScheduler
+from app.core.canvas_celery_beat import CanvasDatabaseScheduler as DatabaseScheduler
