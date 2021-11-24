@@ -16,9 +16,11 @@ from sqlalchemy.orm import scoped_session
 from kombu import Producer
 
 from app.db.session import SessionLocal
-from app.models.canvas_schedule_entry import CanvasScheduleEntry
-from app.models.crontab_schedule import CrontabSchedule
-from app.models.interval_schedule import IntervalSchedule
+from app.models import (
+    ScheduleEntry as CanvasScheduleEntry,
+    CrontabSchedule,
+    IntervalSchedule,
+)
 
 
 dbsession = scoped_session(SessionLocal)
@@ -29,7 +31,7 @@ debug, info, error, warning = (logger.debug, logger.info, logger.error, logger.w
 ScheduleModel = Union[CrontabSchedule, IntervalSchedule]
 
 
-class CanvasEntry(ScheduleEntry):
+class Entry(ScheduleEntry):
     model_schedules = (
         (schedules.crontab, CrontabSchedule, "crontab"),
         (schedules.schedule, IntervalSchedule, "interval"),
@@ -59,7 +61,7 @@ class CanvasEntry(ScheduleEntry):
     def _default_now(self) -> datetime.datetime:
         return datetime.datetime.utcnow()
 
-    def __next__(self) -> CanvasEntry:
+    def __next__(self) -> Entry:
         self.model.last_run_at = self._default_now()
         self.model.total_run_count += 1
         dbsession.commit()
@@ -67,7 +69,7 @@ class CanvasEntry(ScheduleEntry):
 
     next = __next__  # for 2to3
 
-    def __reduce__(self) -> Tuple[CanvasEntry, Tuple]:
+    def __reduce__(self) -> Tuple[Entry, Tuple]:
         return self.__class__, (
             self.name,
             self.signature,
@@ -79,13 +81,13 @@ class CanvasEntry(ScheduleEntry):
     def __repr__(self) -> str:
         return "<{name}: {0.name} {0.schedule}".format(self, name=type(self).__name__)
 
-    def editable_fields_equal(self, other: CanvasEntry) -> bool:
+    def editable_fields_equal(self, other: Entry) -> bool:
         for attr in ("signature", "schedule"):
             if getattr(self, attr) != getattr(other, attr):
                 return False
         return True
 
-    def __eq__(self, other: CanvasEntry) -> bool:
+    def __eq__(self, other: Entry) -> bool:
         """Test schedule entries equality.
 
         Will only compare "editable" fields:
@@ -110,7 +112,7 @@ class CanvasEntry(ScheduleEntry):
         name: str,
         skip_fields: Optional[Tuple[str]] = None,
         **entry: Dict[str, Any],
-    ) -> CanvasEntry:
+    ) -> Entry:
         fields = dict(entry)
         for skip_field in skip_fields or ():
             fields.pop(skip_field, None)
@@ -134,8 +136,8 @@ class CanvasEntry(ScheduleEntry):
         return cls(db_entry)
 
 
-class CanvasDatabaseScheduler(Scheduler):
-    Entry = CanvasEntry
+class DatabaseScheduler(Scheduler):
+    Entry = Entry
     Schedules = Dict[str, Entry]
     _last_timestamp = None
     _initial_read = False
