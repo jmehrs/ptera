@@ -1,72 +1,38 @@
 from celery import states
+from celery import Task
 from celery.result import AsyncResult
-from fastapi import APIRouter
+from fastapi import APIRouter, Path
+from fastapi.param_functions import Depends
 from app import crud, models, schemas
 from app.core import celery_app
-from typing import Optional, TYPE_CHECKING, Union
-
-if TYPE_CHECKING:
-    from celery.result import EagerResult
-    from celery.app.task import Task
+from app.api.dependencies import get_task_info
+from typing import List, Optional, TYPE_CHECKING, Union
 
 router = APIRouter()
 
-def update_response_result(response, result):
-    response['result'] = result.result
-    if result.state == states.FAILURE:
-        response['traceback'] = result.traceback
+
+@router.get("/", summary="Returns a list of all tasks", response_model=List[str])
+def get_task_list(skip: int = 0, limit: int = 50):
+    tasks = sorted(celery_app.tasks.keys())
+    public_tasks = [task for task in tasks if not task.startswith("celery.")]
+    return public_tasks[skip : skip + limit]
+
 
 @router.get(
-    "/registered",
-    summary="Get all tasks",
+    "/{task_name}",
+    summary="Returns more detailed information about a task",
+    response_model=schemas.TaskConfig,
 )
-async def get_tasks(attributes: Optional[str]=None):
-    # TODO: *args for query parameter
-    tasks = celery_app.control.inspect().registered(attributes or '')
-    return {"message": "Success", 'data': tasks}
+def get_task_info(task: Task = Depends(get_task_info)):
 
-@router.post(
-    "/run/{task_name}",
-    summary="run task",
-)
-async def run_async_task(task_name: str, params: schemas.TaskArgs):
-    try:
-        task: Task = celery_app.tasks[task_name]
-    except KeyError:
-        return # TODO: Return 404 task not found
+    task_config = schemas.TaskConfig.from_task(task)
+    return task_config
 
-    result: EagerResult = task.apply_async(
-        args=params.args, kwargs=params.kwargs, **params.run_options
-    )
 
-    return {"task_id": result.task_id}
-
-@router.get(
-    "/query",
-    summary="Returns details on the running task(s)",
-)
-async def get_task_details(task_ids: Optional[str]=None):
-    # TODO: *args for query parameter
-    details = celery_app.control.inspect().query_task(task_ids or '')
-    return {"message": f"running task: {details}"}
-
-@router.get(
-    "/result/{task_id}",
-    summary="Get the specified unit",
-)
-async def get_task_result(task_id: str, timeout: Union[float, int, None] = None):
-    timeout = float(timeout) if timeout is not None else None
-    try:
-        result = AsyncResult(task_id)
-    except ValueError:
-        return # TODO: Return 404 task_id not found
-
-    response = {"task_id": result.task_id, "state": result.state}
-    
-    if timeout:
-        result.get(timeout=timeout, propagate=False)
-        update_response_result(response, result)
-    elif result.ready():
-        update_response_result(response, result)
-
-    return response
+# TODO: Future work
+# @router.patch(
+#     "/{task_name}",
+#     summary="Updates the specified task's metadata with the given body parameters",
+# )
+# def edit_task(task_name: str):
+#     ...
