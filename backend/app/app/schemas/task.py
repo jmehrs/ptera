@@ -56,6 +56,10 @@ class TaskSignature(TaskBaseModel):
     subtask_type: Optional[str] = None
     immutable: bool = False
 
+    @classmethod
+    def from_signature(cls, sig: Signature) -> TaskSignature:
+        return cls(**sig)
+
     def to_signature(self) -> Signature:
         return signature(self.dict())
 
