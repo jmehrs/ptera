@@ -8,3 +8,6 @@ ENV PYTHONDONTWRITEBYTECODE 1
 COPY ./app /app
 
 RUN bash -c "pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir -r requirements.txt"
+
+RUN useradd --system --group worker && chown -R worker /app
+USER worker
