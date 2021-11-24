@@ -9,3 +9,13 @@ SQLAlchemy>=1.4.25
 SQLAlchemy-Utils>=0.37.9
 tenacity>=8.0.1
 uvicorn>=0.13.4
+
+# Test Dependencies
+pytest>=6.2.5
+pytest-cov>=3.0.0
+mypy>=0.910
+black>=21.9b0
+autoflake>=1.4
+flake8>=4.0.1
+requests>=2.26.0
+sqlalchemy-stubs>=0.4
