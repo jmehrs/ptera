@@ -1,5 +1,4 @@
 from typing import Any, Dict, Optional, Union
-from fastapi.encoders import jsonable_encoder
 
 from sqlalchemy.orm import Session
 
