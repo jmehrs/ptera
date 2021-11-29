@@ -1,8 +1,6 @@
 import random
 import string
-from typing import Any, Dict, List, Union
-from celery import signature
-from celery.canvas import Signature
+from typing import Dict, List, Union
 
 
 def random_lower_string() -> str:
@@ -24,12 +22,3 @@ def random_dict() -> Dict[str, Union[str, int]]:
         random_lower_string(): random_alphanumeric()
         for _ in range(random.randint(0, 3))
     }
-
-
-def random_signature() -> Signature:
-    return signature(
-        random_lower_string(),
-        args=random_list(),
-        kwargs=random_dict(),
-        options=random_dict(),
-    )
