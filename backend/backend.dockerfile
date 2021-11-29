@@ -1,13 +1,16 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
 
+RUN pip install --no-cache-dir --upgrade pip
+RUN useradd -ms /bin/bash worker 
+USER worker
+
 WORKDIR /app/
+
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
+ENV PATH="/home/worker/.local/bin:${PATH}"
 
-COPY ./app /app
+COPY --chown=worker:worker ./app /app
+RUN pip install --no-cache-dir --user -r requirements.txt
 
-RUN bash -c "pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir -r requirements.txt"
-
-RUN useradd --system --group worker && chown -R worker /app
-USER worker
