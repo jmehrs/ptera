@@ -2,7 +2,8 @@ from sqlalchemy.orm import Session
 
 from app import crud, models
 from app.schemas import CanvasCreate, TaskSignature
-from app.tests.utils.utils import random_lower_string, random_signature
+from .utils import random_lower_string
+from .task import random_signature
 
 
 def create_random_canvas(db: Session) -> models.Canvas:
