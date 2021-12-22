@@ -38,7 +38,7 @@ def test_update_canvas(db: Session) -> None:
     assert canvas2.canvas == sig2
 
 
-def test_delete_canvas(db: Session) -> None:
+def test_remove_canvas(db: Session) -> None:
     canvas = create_random_canvas(db)
     removed_canvas = crud.canvas.remove(db=db, id=canvas.id)
     invalid_canvas = crud.canvas.get(db=db, id=canvas.id)

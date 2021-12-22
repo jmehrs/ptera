@@ -11,7 +11,7 @@ def random_crontab_interval():
     return choice(interval_choices)
 
 
-def create_random_crontab_schedule(db: Session) -> models.Canvas:
+def create_random_crontab_schedule(db: Session) -> models.CrontabSchedule:
     obj_in = CrontabScheduleCreate(
         minute=random_crontab_interval(),
         hour=random_crontab_interval(),

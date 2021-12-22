@@ -1,8 +1,7 @@
-from celery import schedules, signature as signature_
+from celery import signature as celery_signature
 from celery.canvas import Signature
 from sqlalchemy import Column, Integer, String
 from app.models.model_base import Base, JSONBType
-import json
 
 
 class Canvas(Base):
@@ -12,5 +11,4 @@ class Canvas(Base):
 
     @property
     def signature(self) -> Signature:
-        json_signature = json.loads(self.canvas)
-        return signature_(json_signature)
+        return celery_signature(self.canvas)

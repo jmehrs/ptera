@@ -11,7 +11,7 @@ def random_interval_period():
     return choice(period_choices)
 
 
-def create_random_interval_schedule(db: Session) -> models.Canvas:
+def create_random_interval_schedule(db: Session) -> models.IntervalSchedule:
     obj_in = IntervalScheduleCreate(
         every=randint(0, 9), period=random_interval_period()
     )

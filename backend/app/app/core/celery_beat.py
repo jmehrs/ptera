@@ -17,7 +17,7 @@ from kombu import Producer
 
 from app.db.session import SessionLocal
 from app.models import (
-    ScheduleEntry as CanvasScheduleEntry,
+    Schedule,
     CrontabSchedule,
     IntervalSchedule,
 )
@@ -37,7 +37,7 @@ class Entry(ScheduleEntry):
         (schedules.schedule, IntervalSchedule, "interval"),
     )
 
-    def __init__(self, model: CanvasScheduleEntry) -> None:
+    def __init__(self, model: Schedule) -> None:
         self.app = current_app._get_current_object()
         self.name = model.name
         self.signature = model.signature
@@ -120,15 +120,15 @@ class Entry(ScheduleEntry):
         schedule = fields.pop("schedule")
         signature = fields.pop("signature")
         model_schedule, model_field = cls.to_model_schedule(schedule)
-        model_signature = CanvasScheduleEntry.dict_to_json(signature)
+        model_signature = Schedule.dict_to_json(signature)
         fields[model_field] = model_schedule
         fields["signature"] = model_signature
 
-        query = dbsession.query(CanvasScheduleEntry)
+        query = dbsession.query(Schedule)
         query = query.filter_by(name=name)
         db_entry = query.first()
         if db_entry is None:
-            new_entry = CanvasScheduleEntry(**fields)
+            new_entry = Schedule(**fields)
             new_entry.name = name
             dbsession.add(new_entry)
             dbsession.commit()
@@ -148,8 +148,8 @@ class DatabaseScheduler(Scheduler):
         Scheduler.__init__(self, app, **kwargs)
 
     def _get_latest_change(self) -> datetime.datetime:
-        query = dbsession.query(CanvasScheduleEntry.date_changed)
-        query = query.order_by(CanvasScheduleEntry.date_changed.desc())
+        query = dbsession.query(Schedule.date_changed)
+        query = query.order_by(Schedule.date_changed.desc())
         latest_entry_date = query.first()
         return latest_entry_date
 
@@ -167,7 +167,7 @@ class DatabaseScheduler(Scheduler):
 
     def _all_as_schedule(self) -> Schedules:
         s = {}
-        query = dbsession.query(CanvasScheduleEntry)
+        query = dbsession.query(Schedule)
         query = query.filter_by(enabled=True)
         for row in query:
             s[row.name] = self.Entry(row)

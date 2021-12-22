@@ -66,7 +66,7 @@ def test_update_crontab_schedule(db: Session) -> None:
     assert crontab_schedule2.month_of_year == month_of_year2
 
 
-def test_delete_crontab_schedule(db: Session) -> None:
+def test_remove_crontab_schedule(db: Session) -> None:
     crontab_schedule = create_random_crontab_schedule(db)
     removed_crontab_schedule = crud.crontab_schedule.remove(
         db=db, id=crontab_schedule.id

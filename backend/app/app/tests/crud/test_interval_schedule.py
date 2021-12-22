@@ -49,7 +49,7 @@ def test_update_interval_schedule(db: Session) -> None:
     assert interval_schedule2.every == every2
 
 
-def test_delete_interval_schedule(db: Session) -> None:
+def test_remove_interval_schedule(db: Session) -> None:
     interval_schedule = create_random_interval_schedule(db)
     removed_interval_schedule = crud.interval_schedule.remove(
         db=db, id=interval_schedule.id

@@ -27,17 +27,18 @@ services:
       - redis
       - rabbitmq
 
-  beat:
-    env_file:
-      - ".env"
-    image: '${CELERYWORKER_IMAGE_NAME?Variable not set}:${TAG-latest}'
-    build:
-      context: ./backend
-      dockerfile: celeryworker.dockerfile
-    command: /startup_scripts/beat/start.sh
-    depends_on:
-      - redis
-      - rabbitmq
+# TEMPORARILY COMMENTING DUE TO DB CHANGES FOR CANVAS
+  # beat:
+  #   env_file:
+  #     - ".env"
+  #   image: '${CELERYWORKER_IMAGE_NAME?Variable not set}:${TAG-latest}'
+  #   build:
+  #     context: ./backend
+  #     dockerfile: celeryworker.dockerfile
+  #   command: /startup_scripts/beat/start.sh
+  #   depends_on:
+  #     - redis
+  #     - rabbitmq
     
 
   redis:

@@ -1,6 +1,7 @@
 from celery import schedules
 from datetime import timedelta
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
 from app.models.model_base import Base
@@ -11,23 +12,23 @@ class IntervalSchedule(Base):
     every = Column(Integer, nullable=False)
     period = Column(String(24))
 
-    @property
-    def schedule(self):
-        return schedules.schedule(timedelta(**{self.period: self.every}))
+    # @property
+    # def schedule(self):
+    #     return schedules.schedule(timedelta(**{self.period: self.every}))
 
-    @classmethod
-    def from_schedule(cls, dbsession, schedule, period='seconds'):
-        every = max(schedule.run_every.total_seconds(), 0)
-        try:
-            query = dbsession.query(IntervalSchedule)
-            query = query.filter_by(every=every, period=period)
-            existing = query.one()
-            return existing
-        except NoResultFound:
-            return cls(every=every, period=period)
-        except MultipleResultsFound:
-            query = dbsession.query(IntervalSchedule)
-            query = query.filter_by(every=every, period=period)
-            query.delete()
-            dbsession.commit()
-            return cls(every=every, period=period)
+    # @classmethod
+    # def from_schedule(cls, dbsession, schedule, period="seconds"):
+    #     every = max(schedule.run_every.total_seconds(), 0)
+    #     try:
+    #         query = dbsession.query(IntervalSchedule)
+    #         query = query.filter_by(every=every, period=period)
+    #         existing = query.one()
+    #         return existing
+    #     except NoResultFound:
+    #         return cls(every=every, period=period)
+    #     except MultipleResultsFound:
+    #         query = dbsession.query(IntervalSchedule)
+    #         query = query.filter_by(every=every, period=period)
+    #         query.delete()
+    #         dbsession.commit()
+    #         return cls(every=every, period=period)

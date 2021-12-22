@@ -15,7 +15,7 @@ class IntervalScheduleBase(BaseModel):
 
 # Properties to receive via API on creation
 class IntervalScheduleCreate(IntervalScheduleBase):
-    every: int = None
+    every: int
 
 
 # Properties to receive via API on update
