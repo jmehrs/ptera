@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 from celery import Task, signature
-from typing import Optional, TypeVar, Union, List, Dict
+from typing import Optional, List, Dict
 from celery.canvas import Signature
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 from json import dumps
-
-
-JSONableList = TypeVar("JSONableList", bound=List[Union[int, str, bool]])
-JSONableDict = TypeVar("JSONableDict", bound=Dict[str, Union[int, str, bool]])
+from app.core.celery_app import celery_tasks
+from app.utils.utils import get_all_occurences
 
 
 class TaskBaseModel(BaseModel):
@@ -16,7 +14,7 @@ class TaskBaseModel(BaseModel):
 
     @classmethod
     def from_task(cls, task: Task):
-        args = {field: getattr(task, field) for field in cls.__fields__}
+        args = {field: getattr(task, field, None) for field in cls.__fields__}
         return cls(**args)
 
 
@@ -50,11 +48,18 @@ class TaskSignature(TaskBaseModel):
     """Data scheme of a celery task signature"""
 
     task: str
-    args: Optional[JSONableList] = Field(default_factory=list)
-    kwargs: Optional[JSONableDict] = Field(default_factory=dict)
+    args: Optional[List] = Field(default_factory=list)
+    kwargs: Optional[Dict] = Field(default_factory=dict)
     options: Optional[Dict] = Field(default_factory=dict)
     subtask_type: Optional[str] = None
     immutable: bool = False
+
+    @root_validator
+    def validate_tasks(cls, values: Dict) -> None:
+        tasks = set(get_all_occurences("task", values))
+        if invalid_tasks := tasks - celery_tasks():
+            raise ValueError(f"Invalid tasks were specified: {invalid_tasks}")
+        return values
 
     @classmethod
     def from_signature(cls, sig: Signature) -> TaskSignature:
