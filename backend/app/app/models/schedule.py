@@ -14,7 +14,7 @@ from .model_base import Base
 
 class Schedule(Base):
     id = Column(Integer, primary_key=True)
-    name = Column(String(255))
+    name = Column(String(255), unique=True)
     canvas_id = Column(Integer, ForeignKey("canvas.id"))
     interval_id = Column(
         Integer,
