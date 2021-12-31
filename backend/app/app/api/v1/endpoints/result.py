@@ -1,12 +1,9 @@
-from celery import states
 from celery.result import AsyncResult
+from celery.exceptions import NotRegistered
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException, status
-from app import crud, models, schemas
-from app.core import celery_app
 from app.api.dependencies import get_task_result
-from typing import Optional, TYPE_CHECKING, Union
 
 
 router = APIRouter()
@@ -15,8 +12,14 @@ router = APIRouter()
 @router.get("/{task_id}", summary="Returns the results of the specified task-id")
 def get_result(result: AsyncResult = Depends(get_task_result)):
     if result.ready():
-        return result.get()
+        try:
+            return result.get()
+        except NotRegistered as err:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                detail=f"Result unavailable. {err!r} Valid tasks can be found by performing a GET request on the /tasks path.",
+            )
 
-    return HTTPException(
+    raise HTTPException(
         status.HTTP_202_ACCEPTED, detail="The result is still processing"
     )
