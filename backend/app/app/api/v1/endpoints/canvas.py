@@ -1,38 +1,49 @@
-from celery import states
-from celery.result import AsyncResult
-from fastapi import APIRouter
-from app import crud, models, schemas
-from app.core import celery_app
-from typing import Optional, TYPE_CHECKING, Union
+from sqlalchemy.orm.session import Session
+from sqlalchemy.exc import IntegrityError
+from fastapi import HTTPException, APIRouter, Depends, Path, status
+from app import crud, schemas
+from app.api.dependencies import get_db, get_canvas
+from psycopg2.errors import UniqueViolation
 
 router = APIRouter()
 
 
 @router.get("/", summary="Returns a list of all created canvases")
-def get_all_canvases():
-    ...
+def get_all_canvases(
+    skip: int = 0, limit: int = 50, db: Session = Depends(get_db)
+):
+    canvases = crud.canvas.get_multi(db, skip=skip, limit=limit)
+    return canvases
 
 
 @router.post(
     "/",
     summary="Creates the celery canvas function and stores it in the database",
 )
-def create_canvas(canvas: schemas.CanvasCreate):
-    ...
+def create_canvas(canvas: schemas.CanvasCreate, db: Session = Depends(get_db)):
+    try:
+        return crud.canvas.create(db, obj_in=canvas)
+    except IntegrityError as err:
+        if type(err.orig) is UniqueViolation:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Canvas {canvas.name} already exists",
+            )
+        else:
+            raise err
 
 
-@router.get(
-    "/{canvas_name}", summary="Returns more detailed information about a canvas"
-)
-def get_canvas():
-    ...
+@router.get("/{canvas_name}", summary="Returns the specific canvas")
+def get_canvas_by_name(canvas: schemas.Canvas = Depends(get_canvas)):
+    return canvas
 
 
 @router.patch(
     "/{canvas_name}",
     summary="Edits the celery canvas metadata",
 )
-def edit_canvas():
+def edit_canvas(updated_canvas: schemas.CanvasUpdate, db: Session = Depends(get_db)):
+    #TODO: Create crud.canvas.update_by_name(db=db, name=canvas_name, obj_in=updated_canvas)
     ...
 
 
@@ -40,5 +51,11 @@ def edit_canvas():
     "/{canvas_name}",
     summary="Removes canvas from backend store",
 )
-def delete_canvas():
-    ...
+def delete_canvas(
+    canvas_name: str = Path(..., title="Name of the canvas to delete"),
+    db: Session = Depends(get_db),
+):
+    if canvas := crud.canvas.remove_by_name(db, name=canvas_name):
+        return canvas
+    else:
+        raise HTTPException(status_code=404, detail=f"Canvas '{canvas_name}' not found")
