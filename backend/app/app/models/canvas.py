@@ -6,7 +6,7 @@ from app.models.model_base import Base, JSONBType
 
 class Canvas(Base):
     id = Column(Integer, primary_key=True)
-    name = Column(String(255))
+    name = Column(String(255), unique=True)
     canvas = Column(JSONBType)
 
     @property
