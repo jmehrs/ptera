@@ -1,12 +1,10 @@
-from celery import states
 from celery import Task
-from celery.result import AsyncResult
 from fastapi import APIRouter, Path
 from fastapi.param_functions import Depends
-from app import crud, models, schemas
+from app import schemas
 from app.core import celery_app
 from app.api.dependencies import get_task_info
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import List
 
 router = APIRouter()
 
@@ -24,6 +22,9 @@ def get_task_list(skip: int = 0, limit: int = 50):
     response_model=schemas.TaskConfig,
 )
 def get_task_info(task: Task = Depends(get_task_info)):
+    #TODO: Check if the task config actually updates when app broadcasts changes to tasks.
+    #TODO: Create endpoint to broadcast changes to task config
+    # https://docs.celeryproject.org/en/stable/userguide/workers.html#remote-control
 
     task_config = schemas.TaskConfig.from_task(task)
     return task_config
