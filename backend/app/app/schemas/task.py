@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from json import dumps
+from typing import Dict, List, Optional
+
+from app.core.celery_app import celery_tasks
+from app.utils.utils import get_all_occurences, populate_each_instance
 from celery import Task, signature
-from typing import Optional, List, Dict
 from celery.canvas import Signature
 from pydantic import BaseModel, Field, root_validator
-from json import dumps
-from app.core.celery_app import celery_tasks
-from app.utils.utils import get_all_occurences
 
 
 class TaskBaseModel(BaseModel):
@@ -55,10 +56,16 @@ class TaskSignature(TaskBaseModel):
     immutable: bool = False
 
     @root_validator
-    def validate_tasks(cls, values: Dict) -> None:
+    def validate_tasks(cls, values: Dict) -> Dict:
         tasks = set(get_all_occurences("task", values))
         if invalid_tasks := tasks - celery_tasks():
             raise ValueError(f"Invalid tasks were specified: {invalid_tasks}")
+
+        # TODO: Instead make the validator recursively make each obj
+        #      an instance of TaskSignature if the key "task" is
+        #      present.
+        populate_each_instance("task", values, options=dict())
+
         return values
 
     @classmethod
@@ -66,7 +73,13 @@ class TaskSignature(TaskBaseModel):
         return cls(**sig)
 
     def to_signature(self) -> Signature:
-        return signature(self.dict())
+        sig = signature(self.dict())
+        if type(sig) is Signature:
+            return sig
+        else:
+            raise RuntimeError(
+                f"Couldn't convert TaskSignature object into a celery signature: {self}"
+            )
 
     def to_json(self) -> str:
         signature = self.to_signature()
