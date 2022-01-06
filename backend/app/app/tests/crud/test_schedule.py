@@ -1,13 +1,12 @@
-from sqlalchemy.orm import Session
-
 from app import crud
+from app.models.crontab_schedule import CrontabSchedule
 from app.schemas import ScheduleCreate, ScheduleUpdate
 from app.tests.utils.canvas import create_random_canvas
 from app.tests.utils.crontab_schedule import create_random_crontab_schedule
 from app.tests.utils.interval_schedule import create_random_interval_schedule
 from app.tests.utils.schedule import create_random_schedule
 from app.tests.utils.utils import random_lower_string
-from app.models.crontab_schedule import CrontabSchedule
+from sqlalchemy.orm import Session
 
 
 def test_create_interval_schedule(db: Session) -> None:
@@ -54,20 +53,19 @@ def test_get_schedule(db: Session) -> None:
 def test_update_schedule(db: Session) -> None:
     schedule = create_random_schedule(db)
     schedule_period = schedule.schedule
+    invalid_schedule_crud = (
+        crud.crontab_schedule
+        if type(schedule_period) is CrontabSchedule
+        else crud.interval_schedule
+    )
 
     crontab2 = create_random_crontab_schedule(db)
     canvas2 = create_random_canvas(db)
     schedule_update = ScheduleUpdate(canvas_id=canvas2.id, crontab_id=crontab2.id)
-    print(schedule.schedule.id)
 
     schedule2 = crud.schedule.update(db=db, db_obj=schedule, obj_in=schedule_update)
-    print(schedule.schedule.id)
 
-    invalid_schedule_period = (
-        crud.crontab_schedule
-        if type(schedule_period) is CrontabSchedule
-        else crud.interval_schedule
-    ).get(db=db, id=schedule_period.id)
+    invalid_schedule_period = invalid_schedule_crud.get(db=db, id=schedule_period.id)
 
     assert invalid_schedule_period is None
 
@@ -117,6 +115,7 @@ def test_remove_schedule_period(db: Session) -> None:
     valid_canvas = crud.canvas.get(db=db, id=schedule_canvas_id)
 
     assert invalid_schedule_period is None
+    assert valid_schedule
     assert valid_schedule.schedule is None
 
     assert valid_schedule is not None
