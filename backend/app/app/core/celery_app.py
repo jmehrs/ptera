@@ -1,8 +1,9 @@
 import os
 from typing import Set
-from app.core.config import settings
+
 from celery import Celery
 
+from app.core.config import settings
 
 os.environ.setdefault("CELERY_CONFIG_MODULE", settings.CELERY_CONFIG_MODULE)
 

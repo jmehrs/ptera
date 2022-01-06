@@ -1,10 +1,11 @@
 from typing import Generator
 
 import pytest
+from fastapi.testclient import TestClient
+
 from app.core.celery_app import celery_app
 from app.db.session import SessionLocal
 from app.main import app
-from fastapi.testclient import TestClient
 
 
 @pytest.fixture(scope="session")

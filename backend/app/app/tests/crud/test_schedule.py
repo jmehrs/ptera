@@ -1,3 +1,5 @@
+from sqlalchemy.orm import Session
+
 from app import crud
 from app.models.crontab_schedule import CrontabSchedule
 from app.schemas import ScheduleCreate, ScheduleUpdate
@@ -6,7 +8,6 @@ from app.tests.utils.crontab_schedule import create_random_crontab_schedule
 from app.tests.utils.interval_schedule import create_random_interval_schedule
 from app.tests.utils.schedule import create_random_schedule
 from app.tests.utils.utils import random_lower_string
-from sqlalchemy.orm import Session
 
 
 def test_create_interval_schedule(db: Session) -> None:

@@ -1,14 +1,10 @@
-from app import crud, models
-from app.schemas import CanvasCreate, TaskSignature
 from sqlalchemy.orm import Session
 
-from .task import (
-    bad_malformed_task,
-    bad_unregistered_task,
-    good_bare_minimum_task,
-    good_complex_task,
-    random_signature,
-)
+from app import crud, models
+from app.schemas import CanvasCreate, TaskSignature
+
+from .task import (bad_malformed_task, bad_unregistered_task,
+                   good_bare_minimum_task, good_complex_task, random_signature)
 from .utils import random_int, random_lower_string
 
 good_bare_minimum_canvas = {

@@ -1,5 +1,4 @@
 from random import randint
-from sqlalchemy.orm import Session
 
 from app import crud
 from app.schemas import IntervalScheduleCreate, IntervalScheduleUpdate
@@ -7,6 +6,7 @@ from app.tests.utils.interval_schedule import (
     create_random_interval_schedule,
     random_interval_period,
 )
+from sqlalchemy.orm import Session
 
 
 def test_create_interval_schedule(db: Session) -> None:
@@ -59,5 +59,6 @@ def test_remove_interval_schedule(db: Session) -> None:
     )
 
     assert invalid_interval_schedule is None
+    assert removed_interval_schedule
     assert removed_interval_schedule.every == interval_schedule.every
     assert removed_interval_schedule.period == interval_schedule.period

@@ -1,9 +1,10 @@
 import string
+from random import choice
+
 from sqlalchemy.orm import Session
 
 from app import crud, models
 from app.schemas import CrontabScheduleCreate
-from random import choice
 
 
 def random_crontab_interval():

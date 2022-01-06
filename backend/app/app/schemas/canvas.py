@@ -1,5 +1,7 @@
 from typing import Optional
+
 from pydantic.main import BaseModel
+
 from .task import TaskSignature
 
 

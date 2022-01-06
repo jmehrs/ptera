@@ -1,10 +1,7 @@
-from celery.result import AsyncResult
-from celery.exceptions import NotRegistered
-from fastapi import APIRouter
-from fastapi import Depends
-from fastapi import HTTPException, status
 from app.api.dependencies import get_task_result
-
+from celery.exceptions import NotRegistered
+from celery.result import AsyncResult
+from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
 
@@ -17,7 +14,10 @@ def get_result(result: AsyncResult = Depends(get_task_result)):
         except NotRegistered as err:
             raise HTTPException(
                 status.HTTP_404_NOT_FOUND,
-                detail=f"Result unavailable. {err!r} Valid tasks can be found by performing a GET request on the /tasks path.",
+                detail=(
+                    f"Result unavailable. {err!r} Valid tasks can be found by "
+                    "performing a GET request on the /tasks path."
+                ),
             )
 
     raise HTTPException(

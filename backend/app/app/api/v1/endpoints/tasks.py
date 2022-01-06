@@ -1,11 +1,12 @@
 from typing import List
 
-from app import schemas
-from app.api.dependencies import get_task_info
-from app.core import celery_app
 from celery import Task
 from fastapi import APIRouter
 from fastapi.param_functions import Depends
+
+from app import schemas
+from app.api.dependencies import get_task_info
+from app.core import celery_app
 
 router = APIRouter()
 

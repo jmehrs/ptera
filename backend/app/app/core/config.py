@@ -1,6 +1,6 @@
-import secrets
-from typing import Any, Dict, List, Optional, Union
-from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, PostgresDsn, validator
+from typing import Any, Dict, Optional
+
+from pydantic import BaseSettings, EmailStr, PostgresDsn, validator
 
 
 class Settings(BaseSettings):
@@ -46,13 +46,13 @@ class Settings(BaseSettings):
             scheme="postgresql",
             user=values.get("POSTGRES_USER"),
             password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
+            host=values["POSTGRES_SERVER"],
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
 
-    CELERY_CONFIG_MODULE: str = 'app.core.celery_config'
+    CELERY_CONFIG_MODULE: str = "app.core.celery_config"
     CELERY_BROKER_URL: str
-    CELERY_BACKEND_URL: str 
+    CELERY_BACKEND_URL: str
 
     # SMTP_TLS: bool = True
     # SMTP_PORT: Optional[int] = None

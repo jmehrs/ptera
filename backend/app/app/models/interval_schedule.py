@@ -1,8 +1,4 @@
-from celery import schedules
-from datetime import timedelta
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import backref, relationship
-from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
 from app.models.model_base import Base
 

@@ -1,9 +1,9 @@
-from sqlalchemy.orm.session import Session
-from sqlalchemy.exc import IntegrityError
-from fastapi import HTTPException, APIRouter, Depends, Path, status
 from app import crud, schemas
-from app.api.dependencies import get_db, get_canvas
+from app.api.dependencies import get_canvas, get_db
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 from psycopg2.errors import UniqueViolation
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.session import Session
 
 router = APIRouter()
 
@@ -17,7 +17,7 @@ def get_all_canvases(skip: int = 0, limit: int = 50, db: Session = Depends(get_d
 @router.post(
     "/",
     summary="Creates the celery canvas function and stores it in the database",
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
 )
 def create_canvas(canvas: schemas.CanvasCreate, db: Session = Depends(get_db)):
     try:
@@ -46,7 +46,8 @@ def edit_canvas(
     canvas_name: str = Path(..., title="Name of the canvas to delete"),
     db: Session = Depends(get_db),
 ):
-    # TODO: Create crud.canvas.update_by_name(db=db, name=canvas_name, obj_in=updated_canvas)
+    # TODO: Create
+    #       crud.canvas.update_by_name(db=db, name=canvas_name, obj_in=updated_canvas)
     ...
 
 

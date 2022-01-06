@@ -1,7 +1,7 @@
-from fastapi import APIRouter
-from app import crud, models, schemas
-from app.core import inspector
 from typing import Optional
+
+from app.core import inspector
+from fastapi import APIRouter
 
 router = APIRouter()
 

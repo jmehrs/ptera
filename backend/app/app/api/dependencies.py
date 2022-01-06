@@ -1,14 +1,15 @@
 from contextlib import closing
 from typing import Generator
 
-from app import crud
-from app.core import celery_app
-from app.db.session import SessionLocal
-from app.models.canvas import Canvas
 from celery.app.task import Task
 from celery.result import AsyncResult
 from fastapi import Depends, HTTPException, Path
 from sqlalchemy.orm.session import Session
+
+from app import crud
+from app.core import celery_app
+from app.db.session import SessionLocal
+from app.models.canvas import Canvas
 
 
 def get_db() -> Generator:

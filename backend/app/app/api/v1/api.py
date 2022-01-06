@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import tasks, workers, canvas, result, run, schedule
+from app.api.v1.endpoints import canvas, result, run, schedule, tasks, workers
 
 api_router = APIRouter()
 api_router.include_router(workers.router, prefix="/workers", tags=["workers"])

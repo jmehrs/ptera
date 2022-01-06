@@ -1,17 +1,16 @@
 from typing import Dict
 
 import pytest
-from app.core.config import settings
-from app.schemas import TaskSignature
-from app.tests.utils.canvas import (
-    bad_malformed_canvas,
-    bad_unregistered_canvas,
-    create_random_canvas,
-    good_bare_minimum_canvas,
-    good_complex_canvas,
-)
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+
+from app.core.config import settings
+from app.schemas import TaskSignature
+from app.tests.utils.canvas import (bad_malformed_canvas,
+                                    bad_unregistered_canvas,
+                                    create_random_canvas,
+                                    good_bare_minimum_canvas,
+                                    good_complex_canvas)
 
 
 @pytest.mark.parametrize(

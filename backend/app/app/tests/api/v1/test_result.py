@@ -1,8 +1,9 @@
 import pytest
-from app.core.config import settings
-from app.tests.utils.celery import run_task
 from celery import Celery
 from fastapi.testclient import TestClient
+
+from app.core.config import settings
+from app.tests.utils.celery import run_task
 
 
 def test_get_result(celery: Celery, client: TestClient) -> None:

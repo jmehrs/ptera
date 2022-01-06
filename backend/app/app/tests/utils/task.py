@@ -1,9 +1,9 @@
 from random import choice
 
-from app.core.celery_app import celery_tasks
-
 from celery import signature
 from celery.canvas import Signature
+
+from app.core.celery_app import celery_tasks
 
 from .utils import random_dict, random_list
 

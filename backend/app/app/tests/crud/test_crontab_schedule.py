@@ -1,11 +1,10 @@
-from sqlalchemy.orm import Session
-
 from app import crud
 from app.schemas import CrontabScheduleCreate, CrontabScheduleUpdate
 from app.tests.utils.crontab_schedule import (
     create_random_crontab_schedule,
     random_crontab_interval,
 )
+from sqlalchemy.orm import Session
 
 
 def test_create_crontab_schedule(db: Session) -> None:
@@ -74,6 +73,7 @@ def test_remove_crontab_schedule(db: Session) -> None:
     invalid_crontab_schedule = crud.crontab_schedule.get(db=db, id=crontab_schedule.id)
 
     assert invalid_crontab_schedule is None
+    assert removed_crontab_schedule
     assert removed_crontab_schedule.id == crontab_schedule.id
     assert removed_crontab_schedule.minute == crontab_schedule.minute
     assert removed_crontab_schedule.hour == crontab_schedule.hour

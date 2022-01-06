@@ -1,9 +1,10 @@
+from random import choice, randint
+
 from sqlalchemy.orm import Session
 
 from app import crud, models
 from app.schemas import IntervalScheduleCreate
 from app.schemas.interval_schedule import IntervalPeriods
-from random import randint, choice
 
 
 def random_interval_period():

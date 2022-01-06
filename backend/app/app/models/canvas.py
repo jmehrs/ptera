@@ -1,6 +1,7 @@
 from celery import signature as celery_signature
 from celery.canvas import Signature
 from sqlalchemy import Column, Integer, String
+
 from app.models.model_base import Base, JSONBType
 
 

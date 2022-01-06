@@ -1,13 +1,13 @@
 import asyncio
-from celery import Celery
-from collections import defaultdict
-from typing import Any, Dict, Optional
 import logging
 import time
+from collections import defaultdict
+from typing import Any, Dict, Optional
 
-
+from celery import Celery
 
 logger = logging.getLogger(__name__)
+
 
 class Inspector:
     """Celery worker inspector object.
@@ -15,8 +15,14 @@ class Inspector:
     """
 
     methods = (
-        'active', 'active_queues', 'conf', 'registered',
-        'reserved','revoked', 'scheduled', 'stats'
+        "active",
+        "active_queues",
+        "conf",
+        "registered",
+        "reserved",
+        "revoked",
+        "scheduled",
+        "stats",
     )
 
     def __init__(self, celery_app: Celery, timeout: int = 5):
@@ -37,13 +43,11 @@ class Inspector:
         methods = (self._inspect(method, dest) for method in self.methods)
 
         return await asyncio.gather(*methods, return_exceptions=True)
-        
+
     async def _inspect(self, method: str, dest: str) -> None:
         loop = asyncio.get_running_loop()
-        inspect = self._app.control.inspect(
-            timeout=self._timeout, destination=dest
-        )
-        
+        inspect = self._app.control.inspect(timeout=self._timeout, destination=dest)
+
         start = time.time()
         # Send debug message and run blocking inspection in another thread
         logger.debug(f"{dest}: Sending {method} inspect command")
@@ -55,7 +59,7 @@ class Inspector:
             if response is not None:
                 info = self._workers[dest]
                 info[method] = response
-                info['timestamp'] = time.time()
+                info["timestamp"] = time.time()
 
         return self.workers[dest] if dest else self.workers
 

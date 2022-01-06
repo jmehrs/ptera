@@ -3,11 +3,12 @@ from __future__ import annotations
 from json import dumps
 from typing import Dict, List, Optional
 
-from app.core.celery_app import celery_tasks
-from app.utils.utils import get_all_occurences, populate_each_instance
 from celery import Task, signature
 from celery.canvas import Signature
 from pydantic import BaseModel, Field, root_validator
+
+from app.core.celery_app import celery_tasks
+from app.utils.utils import get_all_occurences, populate_each_instance
 
 
 class TaskBaseModel(BaseModel):

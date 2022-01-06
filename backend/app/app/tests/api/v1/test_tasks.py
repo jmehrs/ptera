@@ -1,7 +1,8 @@
 import pytest
+from fastapi.testclient import TestClient
+
 from app.core.celery_app import celery_tasks
 from app.core.config import settings
-from fastapi.testclient import TestClient
 
 
 @pytest.mark.parametrize(

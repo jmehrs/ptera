@@ -1,13 +1,15 @@
+from random import choice
+
 from sqlalchemy.orm import Session
 
 from app import crud, models
-from app.schemas import ScheduleCreate
 from app.models.crontab_schedule import CrontabSchedule
-from .utils import random_lower_string
+from app.schemas import ScheduleCreate
+
 from .canvas import create_random_canvas
 from .crontab_schedule import create_random_crontab_schedule
 from .interval_schedule import create_random_interval_schedule
-from random import choice
+from .utils import random_lower_string
 
 
 def create_random_schedule(db: Session) -> models.Schedule:

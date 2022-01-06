@@ -1,8 +1,9 @@
+from fastapi import APIRouter, Depends, status
+
 from app import schemas
 from app.api.dependencies import get_canvas
 from app.models.canvas import Canvas
 from app.utils.celery import apply_async
-from fastapi import APIRouter, Depends, status
 
 router = APIRouter()
 

@@ -32,4 +32,5 @@ class CRUDCanvas(CRUDBase[Canvas, CanvasCreate, CanvasUpdate]):
             db.commit()
         return obj
 
+
 canvas = CRUDCanvas(Canvas)
