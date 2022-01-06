@@ -1,6 +1,11 @@
 import random
 import string
+import sys
 from typing import Dict, List, Union
+
+
+def random_int(start: int = 0, end: int = sys.maxsize):
+    return random.randint(start, end)
 
 
 def random_lower_string() -> str:
