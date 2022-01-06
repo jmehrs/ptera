@@ -1,10 +1,11 @@
-from celery import Task
-from fastapi import APIRouter, Path
-from fastapi.param_functions import Depends
-from app import schemas
-from app.core import celery_app
-from app.api.dependencies import get_task_info
 from typing import List
+
+from app import schemas
+from app.api.dependencies import get_task_info
+from app.core import celery_app
+from celery import Task
+from fastapi import APIRouter
+from fastapi.param_functions import Depends
 
 router = APIRouter()
 
@@ -12,8 +13,7 @@ router = APIRouter()
 @router.get("/", summary="Returns a list of all tasks", response_model=List[str])
 def get_task_list(skip: int = 0, limit: int = 50):
     tasks = sorted(celery_app.tasks.keys())
-    public_tasks = [task for task in tasks if not task.startswith("celery.")]
-    return public_tasks[skip : skip + limit]
+    return tasks[skip : skip + limit]
 
 
 @router.get(
@@ -22,8 +22,8 @@ def get_task_list(skip: int = 0, limit: int = 50):
     response_model=schemas.TaskConfig,
 )
 def get_task_info(task: Task = Depends(get_task_info)):
-    #TODO: Check if the task config actually updates when app broadcasts changes to tasks.
-    #TODO: Create endpoint to broadcast changes to task config
+    # TODO: Check if the task config actually updates when app broadcasts changes to tasks.
+    # TODO: Create endpoint to broadcast changes to task config
     # https://docs.celeryproject.org/en/stable/userguide/workers.html#remote-control
 
     task_config = schemas.TaskConfig.from_task(task)
