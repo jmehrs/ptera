@@ -1,21 +1,19 @@
-from sqlalchemy.orm.session import Session
+from contextlib import closing
+from typing import Generator
+
+from app import crud
+from app.core import celery_app
+from app.db.session import SessionLocal
+from app.models.canvas import Canvas
 from celery.app.task import Task
 from celery.result import AsyncResult
-
-from fastapi import HTTPException, Path, Depends
-
-from app.db.session import SessionLocal
-from app.schemas import Canvas
-from app.core import celery_app
-from app import crud
+from fastapi import Depends, HTTPException, Path
+from sqlalchemy.orm.session import Session
 
 
-def get_db() -> Session:
-    try:
-        db = SessionLocal()
+def get_db() -> Generator:
+    with closing(SessionLocal()) as db:
         yield db
-    finally:
-        db.close()
 
 
 def get_task_info(task_name: str = Path(..., title="Name of the task to get")) -> Task:
