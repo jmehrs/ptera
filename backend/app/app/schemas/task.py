@@ -74,7 +74,7 @@ class TaskSignature(TaskBaseModel):
 
     def to_signature(self) -> Signature:
         sig = signature(self.dict())
-        if type(sig) is Signature:
+        if isinstance(sig, Signature):
             return sig
         else:
             raise RuntimeError(
