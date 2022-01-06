@@ -1,7 +1,9 @@
 from typing import Any
+
+from sqlalchemy import inspect
+from sqlalchemy.engine.default import DefaultDialect
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.sql.schema import MetaData
-from sqlalchemy.engine.default import DefaultDialect
 from sqlalchemy_utils import JSONType
 
 try:
@@ -9,7 +11,7 @@ try:
     from sqlalchemy.dialects.postgresql import JSONB
 
     postgres_jsonb = True
-except:
+except Exception:
     postgres_jsonb = False
 
 
@@ -40,3 +42,6 @@ class Base:
     @declared_attr
     def __tablename__(cls) -> str:
         return cls.__name__.lower()
+
+    def as_dict(self) -> dict:
+        return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
