@@ -1,12 +1,11 @@
 from typing import Any, Dict, Optional, Union
-from fastapi.encoders import jsonable_encoder
-from pydantic.errors import CallableError
-
-from sqlalchemy.orm import Session
 
 from app.crud.crud_base import CRUDBase
 from app.models.schedule import Schedule
 from app.schemas.schedule import ScheduleCreate, ScheduleUpdate
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy.orm import Session
+
 from .crontab_schedule import crontab_schedule
 from .interval_schedule import interval_schedule
 
@@ -56,12 +55,11 @@ class CRUDSchedule(CRUDBase[Schedule, ScheduleCreate, ScheduleUpdate]):
         db_obj: Schedule,
         obj_in: Union[ScheduleUpdate, Dict[str, Any]],
     ) -> Schedule:
-        obj_data = jsonable_encoder(db_obj)
+        obj_data = jsonable_encoder(db_obj.as_dict())
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
             update_data = obj_in.dict(exclude_unset=True)
-
         for field in obj_data:
             if field in update_data:
                 if (
