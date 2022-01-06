@@ -2,13 +2,13 @@ import json
 from typing import Any, Dict, Union
 
 from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import DateTime
-from sqlalchemy.orm import relationship, backref
 
+from .canvas import Canvas
 from .crontab_schedule import CrontabSchedule
 from .interval_schedule import IntervalSchedule
-from .canvas import Canvas
 from .model_base import Base
 
 
@@ -47,11 +47,8 @@ class Schedule(Base):
     def schedule(self) -> Union[IntervalSchedule, CrontabSchedule]:
         if self.interval:
             return self.interval
-        if self.crontab:
+        else:
             return self.crontab
-
-    def sig_to_dict(self) -> Dict[str, Any]:
-        return json.loads(self.signature)
 
     @staticmethod
     def dict_to_json(signature: Dict[str, Any]) -> str:
