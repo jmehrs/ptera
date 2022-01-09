@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, String
-
 from app.models.model_base import Base
+from sqlalchemy import Column, Integer, String
 
 
 class IntervalSchedule(Base):
