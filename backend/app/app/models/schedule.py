@@ -11,6 +11,8 @@ from .crontab_schedule import CrontabSchedule
 from .interval_schedule import IntervalSchedule
 from .model_base import Base
 
+ScheduleTimer = Union[CrontabSchedule, IntervalSchedule]
+
 
 class Schedule(Base):
     id = Column(Integer, primary_key=True)
@@ -44,7 +46,7 @@ class Schedule(Base):
     )
 
     @property
-    def schedule(self) -> Union[IntervalSchedule, CrontabSchedule]:
+    def schedule(self) -> ScheduleTimer:
         if self.interval:
             return self.interval
         else:
