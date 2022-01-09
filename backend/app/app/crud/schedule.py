@@ -1,74 +1,93 @@
-from typing import Any, Dict, Optional, Union
+from typing import Optional, Union
 
+from app import crud
+from app.crud.crud_base import CRUDBase
+from app.models import CrontabSchedule, IntervalSchedule, Schedule
+from app.schemas import (
+    CrontabScheduleCreate,
+    IntervalScheduleCreate,
+    ScheduleCreate,
+    ScheduleUpdate,
+)
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
-from app.crud.crud_base import CRUDBase
-from app.models.schedule import Schedule
-from app.schemas.schedule import ScheduleCreate, ScheduleUpdate
 
-from .crontab_schedule import crontab_schedule
-from .interval_schedule import interval_schedule
-
-
-def remove_old_periods(
+def create_timer(
     db: Session,
-    old_obj: Dict[str, Any],
+    new_timer: Union[CrontabScheduleCreate, IntervalScheduleCreate],
+) -> Union[CrontabSchedule, IntervalSchedule]:
+
+    if isinstance(new_timer, CrontabScheduleCreate):
+        timer = crud.crontab_schedule.create(db, obj_in=new_timer)
+    else:
+        timer = crud.interval_schedule.create(db, obj_in=new_timer)
+    return timer
+
+
+# TODO: Replace this function with a proper sqlalchemy delete-orphan relationship
+#      between the schedule table and the timer tables.
+def update_schedule_timer(
+    db: Session,
     db_obj: Schedule,
+    new_timer: Union[IntervalSchedule, CrontabSchedule],
 ):
-    for period_id, period_crud in (
-        ("crontab_id", crontab_schedule),
-        ("interval_id", interval_schedule),
+    for timer_type, timer_crud, timer_model in (
+        ("crontab_id", crud.crontab_schedule, CrontabSchedule),
+        ("interval_id", crud.interval_schedule, IntervalSchedule),
     ):
-        if old_obj[period_id] is not None:
-            period_crud.remove(db=db, id=old_obj[period_id])
-            setattr(db_obj, period_id, None)
+        if old_timer_id := getattr(db_obj, timer_type, None):
+            setattr(db_obj, timer_type, None)
+            timer_crud.remove(db=db, id=old_timer_id)
+
+        if isinstance(new_timer, timer_model):
+            setattr(db_obj, timer_type, new_timer.id)
 
 
 class CRUDSchedule(CRUDBase[Schedule, ScheduleCreate, ScheduleUpdate]):
     def get_by_name(self, db: Session, *, name: str) -> Optional[Schedule]:
         return db.query(Schedule).filter(Schedule.name == name).first()
 
-    def create_with_interval(
-        self, db: Session, *, obj_in: ScheduleCreate, canvas_id: int, schedule_id: int
-    ) -> Schedule:
-        db_obj = Schedule(
-            name=obj_in.name, canvas_id=canvas_id, interval_id=schedule_id
-        )
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        return db_obj
+    def create(self, db: Session, *, obj_in: ScheduleCreate) -> Schedule:
+        if canvas := crud.canvas.get_by_name(db, obj_in.canvas_name):
+            timer = create_timer(db, new_timer=obj_in.schedule)
+            if isinstance(timer, CrontabSchedule):
+                schedule_id = {"crontab_id": timer.id}
+            else:
+                schedule_id = {"interval_id": timer.id}
 
-    def create_with_crontab(
-        self, db: Session, *, obj_in: ScheduleCreate, canvas_id: int, schedule_id: int
-    ) -> Schedule:
-        db_obj = Schedule(name=obj_in.name, canvas_id=canvas_id, crontab_id=schedule_id)
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        return db_obj
+            db_obj = Schedule(name=obj_in.name, canvas_id=canvas.id, **schedule_id)
+            db.add(db_obj)
+            db.commit()
+            db.refresh(db_obj)
+            return db_obj
+
+        raise ValueError(f"Canvas '{obj_in.canvas_name}' does not exist")
 
     def update(
         self,
         db: Session,
         *,
         db_obj: Schedule,
-        obj_in: Union[ScheduleUpdate, Dict[str, Any]],
+        obj_in: ScheduleUpdate,
     ) -> Schedule:
         obj_data = jsonable_encoder(db_obj.as_dict())
-        if isinstance(obj_in, dict):
-            update_data = obj_in
-        else:
-            update_data = obj_in.dict(exclude_unset=True)
+        update_data = obj_in.dict(exclude_unset=True)
+
+        if canvas_name := obj_in.canvas_name:
+            if new_canvas := crud.canvas.get_by_name(db, name=canvas_name):
+                update_data["canvas_id"] = new_canvas.id
+            else:
+                raise ValueError(f"Canvas '{obj_in.canvas_name}' does not exist")
+
+        if timer := obj_in.schedule:
+            timer = create_timer(db, new_timer=timer)
+            update_schedule_timer(db, db_obj, timer)
+
         for field in obj_data:
             if field in update_data:
-                if (
-                    field in ("crontab_id", "interval_id")
-                    and obj_data[field] != update_data[field]
-                ):
-                    remove_old_periods(db, obj_data, db_obj)
                 setattr(db_obj, field, update_data[field])
+
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
