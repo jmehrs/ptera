@@ -2,7 +2,8 @@ from typing import Any
 
 from sqlalchemy import inspect
 from sqlalchemy.engine.default import DefaultDialect
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import registry
 from sqlalchemy.sql.schema import MetaData
 from sqlalchemy_utils import JSONType
 
@@ -33,7 +34,21 @@ metadata = MetaData(
 )
 
 
-@as_declarative(metadata=metadata)
+def _filtered_constructor(self, **kwargs):
+    """Custom constructor for all models that only grabs the items
+    in kwargs that match the respective model's fields.
+    """
+    cls_ = type(self)
+    for item in kwargs:
+        if not hasattr(cls_, item):
+            continue
+        setattr(self, item, kwargs[item])
+
+
+mapper_registry = registry(metadata=metadata, constructor=_filtered_constructor)
+
+
+@mapper_registry.as_declarative_base()
 class Base:
     id: Any
     __name__: str
