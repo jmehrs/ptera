@@ -16,12 +16,14 @@ class IntervalScheduleBase(BaseModel):
 
 # Properties to receive via API on creation
 class IntervalScheduleCreate(IntervalScheduleBase):
+    type: Literal["interval"] = "interval"
     every: int
+    period: Optional[IntervalPeriods] = None
 
 
 # Properties to receive via API on update
 class IntervalScheduleUpdate(IntervalScheduleBase):
-    pass
+    type: Literal["interval"] = "interval"
 
 
 class IntervalScheduleInDBBase(IntervalScheduleBase):

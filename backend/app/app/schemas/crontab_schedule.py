@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic.main import BaseModel
 
@@ -14,12 +14,12 @@ class CrontabScheduleBase(BaseModel):
 
 # Properties to receive via API on creation
 class CrontabScheduleCreate(CrontabScheduleBase):
-    pass
+    type: Literal["crontab"] = "crontab"
 
 
 # Properties to receive via API on update
 class CrontabScheduleUpdate(CrontabScheduleBase):
-    pass
+    type: Literal["crontab"] = "crontab"
 
 
 class CrontabScheduleInDBBase(CrontabScheduleBase):
