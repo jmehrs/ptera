@@ -1,15 +1,27 @@
 from typing import Literal, Optional
 
-from pydantic.main import BaseModel
+from celery import schedules
+from pydantic import BaseModel, root_validator
 
 
 # Shared properties
 class CrontabScheduleBase(BaseModel):
-    minute: Optional[str] = None
-    hour: Optional[str] = None
-    day_of_week: Optional[str] = None
-    day_of_month: Optional[str] = None
-    month_of_year: Optional[str] = None
+    minute: str = "*"
+    hour: str = "*"
+    day_of_week: str = "*"
+    day_of_month: str = "*"
+    month_of_year: str = "*"
+
+    @root_validator
+    def check_cron_fmt(cls, v):
+        schedules.crontab(
+            minute=v["minute"],
+            hour=v["hour"],
+            day_of_week=v["day_of_week"],
+            day_of_month=v["day_of_month"],
+            month_of_year=v["month_of_year"],
+        )  # Raises ValueError if bad syntax
+        return v
 
 
 # Properties to receive via API on creation
@@ -31,4 +43,4 @@ class CrontabScheduleInDBBase(CrontabScheduleBase):
 
 # Additional properties to return via API
 class CrontabSchedule(CrontabScheduleInDBBase):
-    pass
+    type: Literal["crontab"] = "crontab"
