@@ -1,4 +1,6 @@
-from app import crud, schemas
+from typing import List
+
+from app import crud, models, schemas
 from app.api.dependencies import get_canvas, get_db
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 from psycopg2.errors import UniqueViolation
@@ -9,7 +11,9 @@ router = APIRouter()
 
 
 @router.get("/", summary="Returns a list of all created canvases")
-def get_all_canvases(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
+def get_all_canvases(
+    skip: int = 0, limit: int = 50, db: Session = Depends(get_db)
+) -> List[models.Canvas]:
     canvases = crud.canvas.get_multi(db, skip=skip, limit=limit)
     return canvases
 
@@ -33,7 +37,7 @@ def create_canvas(canvas: schemas.CanvasCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/{canvas_name}", summary="Returns the specific canvas")
-def get_canvas_by_name(canvas: schemas.Canvas = Depends(get_canvas)):
+def get_canvas_by_name(canvas: models.Canvas = Depends(get_canvas)) -> models.Canvas:
     return canvas
 
 
@@ -58,7 +62,7 @@ def edit_canvas(
 def delete_canvas(
     canvas_name: str = Path(..., title="Name of the canvas to delete"),
     db: Session = Depends(get_db),
-):
+) -> models.Canvas:
     if canvas := crud.canvas.remove_by_name(db, name=canvas_name):
         return canvas
     else:
