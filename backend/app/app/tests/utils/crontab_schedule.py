@@ -7,8 +7,7 @@ from sqlalchemy.orm import Session
 
 
 def random_crontab_interval():
-    interval_choices = string.digits + "*"
-    return choice(interval_choices)
+    return "*"
 
 
 def random_crontab_schedule_schema() -> CrontabScheduleCreate:
