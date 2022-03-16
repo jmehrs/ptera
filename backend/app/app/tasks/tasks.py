@@ -1,17 +1,16 @@
-from typing import Iterable, Union
-from random import randint, choice
 import errno
 import time
+from random import choice, randint
+from typing import Any, Collection, Iterable, Union
 
-from celery.app import autoretry
 from app.core import celery_app
 from app.core.task_base import DebugTask
-from celery.utils.log import get_task_logger
 from celery.exceptions import Reject
-from celery.schedules import crontab
+from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
 number = Union[int, float]
+
 
 @celery_app.task(bind=True, base=DebugTask, default_retry_delay=3)
 def badadd(self, x: number, y: number) -> number:
@@ -51,13 +50,6 @@ def xsum(numbers: Iterable[number]) -> number:
 
 
 @celery_app.task(bind=True)
-def dump_context(self):
-    logger.info(
-        f"Executing task id {self.request.id}, args: {self.request.args!r} kwargs: {self.request.kwargs!r}"
-    )
-
-
-@celery_app.task(bind=True)
 def upload_files(self, filenames):
     for i, file in enumerate(filenames):
         if not self.request.called_directly:
@@ -85,22 +77,33 @@ def render_scene(self, path):
         raise self.retry(exc, countdown=10)
 
 
-## PERIODIC
+# PERIODIC
 # @celery_app.on_after_finalize.connect
 # def setup_periodic_tasks(sender, **kwargs):
-    # Calls test('hello') every 10 seconds.
-    # sender.add_periodic_task(10.0, add.s(2,5), name='add every 10 seconds')
+# Calls test('hello') every 10 seconds.
+# sender.add_periodic_task(10.0, add.s(2,5), name='add every 10 seconds')
 
-    # Calls test('hello') every 10 minutes.
-    # sender.add_periodic_task(crontab(minute='*/10'), add.s(2,5), name='add every 10 minutes')
+# Calls test('hello') every 10 minutes.
+# sender.add_periodic_task(crontab(minute='*/10'), add.s(2,5), name='add every 10 minutes')
 
-    # Executes every Monday morning at 7:30 a.m.
-    # sender.add_periodic_task(
-    #     crontab(hour=7, minute=30, day_of_week=1),
-    #     test.s('Happy Mondays!'),
-    # )
+# Executes every Monday morning at 7:30 a.m.
+# sender.add_periodic_task(
+#     crontab(hour=7, minute=30, day_of_week=1),
+#     test.s('Happy Mondays!'),
+# )
 
-## HELPERS
+# HELPERS
+
 
 def on_raw_message(body):
     print(body)
+
+
+@celery_app.task(name="test.echo", base=DebugTask)
+def echo(*args: Any) -> Collection[Any]:
+    return args
+
+
+@celery_app.task(name="test.ping", base=DebugTask)
+def ping() -> str:
+    return "pong"
