@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String
 class IntervalSchedule(Base):
     id = Column(Integer, primary_key=True)
     every = Column(Integer, nullable=False)
-    period = Column(String(24))
+    period = Column(String(24), default="minutes")
 
     # @property
     # def schedule(self):
