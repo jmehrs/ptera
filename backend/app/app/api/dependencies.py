@@ -1,15 +1,13 @@
 from contextlib import closing
 from typing import Generator
 
+from app import crud, models, schemas
+from app.core import celery_app
+from app.db.session import SessionLocal
 from celery.app.task import Task
 from celery.result import AsyncResult
 from fastapi import Depends, HTTPException, Path
 from sqlalchemy.orm.session import Session
-
-from app import crud
-from app.core import celery_app
-from app.db.session import SessionLocal
-from app.models.canvas import Canvas
 
 
 def get_db() -> Generator:
@@ -35,9 +33,24 @@ def get_task_result(
 def get_canvas(
     canvas_name: str = Path(..., title="The Canvas to retrieve"),
     db: Session = Depends(get_db),
-) -> Canvas:
+) -> models.Canvas:
 
     if canvas := crud.canvas.get_by_name(db, canvas_name):
         return canvas
     else:
-        raise HTTPException(status_code=404, detail=f"Canvas '{canvas_name}' not found")
+        raise HTTPException(
+            status_code=404, detail=f"models.Canvas '{canvas_name}' not found"
+        )
+
+
+def get_schedule(
+    schedule_name: str = Path(..., title="The Schedule to retrieve"),
+    db: Session = Depends(get_db),
+) -> models.Schedule:
+
+    if schedule := crud.schedule.get_by_name(db, name=schedule_name):
+        return schedule
+    else:
+        raise HTTPException(
+            status_code=404, detail=f"Schedule '{schedule_name}' not found"
+        )
