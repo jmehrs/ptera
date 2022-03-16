@@ -11,7 +11,7 @@ IntervalPeriods = Literal[
 # Shared properties
 class IntervalScheduleBase(BaseModel):
     every: Optional[int] = None
-    period: Optional[IntervalPeriods] = None
+    period: Optional[IntervalPeriods] = "minutes"
 
 
 # Properties to receive via API on creation
@@ -24,6 +24,7 @@ class IntervalScheduleCreate(IntervalScheduleBase):
 # Properties to receive via API on update
 class IntervalScheduleUpdate(IntervalScheduleBase):
     type: Literal["interval"] = "interval"
+    period: Optional[IntervalPeriods] = None
 
 
 class IntervalScheduleInDBBase(IntervalScheduleBase):
@@ -35,4 +36,4 @@ class IntervalScheduleInDBBase(IntervalScheduleBase):
 
 # Additional properties to return via API
 class IntervalSchedule(IntervalScheduleInDBBase):
-    pass
+    type: Literal["interval"] = "interval"
