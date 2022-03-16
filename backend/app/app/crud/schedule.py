@@ -56,7 +56,9 @@ class CRUDSchedule(CRUDBase[Schedule, ScheduleCreate, ScheduleUpdate]):
             else:
                 schedule_id = {"interval_id": timer.id}
 
-            db_obj = Schedule(name=obj_in.name, canvas_id=canvas.id, **schedule_id)
+            db_obj = Schedule(
+                name=obj_in.name, canvas_id=canvas.id, **schedule_id
+            )  # type: ignore
             db.add(db_obj)
             db.commit()
             db.refresh(db_obj)
@@ -92,6 +94,13 @@ class CRUDSchedule(CRUDBase[Schedule, ScheduleCreate, ScheduleUpdate]):
         db.commit()
         db.refresh(db_obj)
         return db_obj
+
+    def remove_by_name(self, db: Session, *, name: str) -> Optional[Schedule]:
+        obj = db.query(Schedule).filter_by(name=name).one_or_none()
+        if obj:
+            db.delete(obj)
+            db.commit()
+        return obj
 
 
 schedule = CRUDSchedule(Schedule)
